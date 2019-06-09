@@ -12,6 +12,10 @@ To plot loss graphs and draw images in a nice web browser view
 ```
 pip3 install visdom
 ```
+### Create virtual environment with Conda
+conda create -n newenvname
+conda install -c pytorch -c fastai fastai
+
 
 ## Training
 ### 1. Setup the dataset
