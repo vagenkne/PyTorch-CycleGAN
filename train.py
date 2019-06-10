@@ -8,6 +8,7 @@ from torch.utils.data import DataLoader
 from torch.autograd import Variable
 from PIL import Image
 import torch
+import Augmentor
 
 from models import Generator
 from models import Discriminator
@@ -17,18 +18,27 @@ from utils import Logger
 from utils import weights_init_normal
 from datasets import ImageDataset
 
+def _describe(self):
+    print(f"shape: {self.shape}")
+    print(f"dtyle: {self.dtype}")
+    print(f"min_val: {torch.min(self)}")
+    print(f"max_val: {torch.max(self)}")
+    print(f"type: {type(self)}")
+
+torch.Tensor.describe = _describe
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--epoch', type=int, default=0, help='starting epoch')
 parser.add_argument('--n_epochs', type=int, default=200, help='number of epochs of training')
 parser.add_argument('--batchSize', type=int, default=1, help='size of the batches')
-parser.add_argument('--dataroot', type=str, default='datasets/horse2zebra/', help='root directory of the dataset')
+parser.add_argument('--dataroot', type=str, default='datasets/apple2orange/', help='root directory of the dataset')
 parser.add_argument('--lr', type=float, default=0.0002, help='initial learning rate')
 parser.add_argument('--decay_epoch', type=int, default=100, help='epoch to start linearly decaying the learning rate to 0')
 parser.add_argument('--size', type=int, default=256, help='size of the data crop (squared assumed)')
 parser.add_argument('--input_nc', type=int, default=3, help='number of channels of input data')
 parser.add_argument('--output_nc', type=int, default=3, help='number of channels of output data')
 parser.add_argument('--cuda', action='store_true', help='use GPU computation')
-parser.add_argument('--n_cpu', type=int, default=8, help='number of cpu threads to use during batch generation')
+parser.add_argument('--n_cpu', type=int, default=0, help='number of cpu threads to use during batch generation')
 opt = parser.parse_args()
 print(opt)
 
@@ -79,11 +89,16 @@ fake_A_buffer = ReplayBuffer()
 fake_B_buffer = ReplayBuffer()
 
 # Dataset loader
-transforms_ = [ transforms.Resize(int(opt.size*1.12), Image.BICUBIC), 
-                transforms.RandomCrop(opt.size), 
-                transforms.RandomHorizontalFlip(),
+p = Augmentor.Pipeline()
+p.random_distortion(probability=1, grid_width=4, grid_height=4, magnitude=8)
+p.rotate90(probability=1)
+
+
+transforms_ = [ transforms.Resize(opt.size, Image.BICUBIC), 
+                p.torch_transform(),
                 transforms.ToTensor(),
-                transforms.Normalize((0.5,0.5,0.5), (0.5,0.5,0.5)) ]
+                transforms.Normalize((0.5,0.5,0.5), (0.5,0.5,0.5)) 
+                ]
 dataloader = DataLoader(ImageDataset(opt.dataroot, transforms_=transforms_, unaligned=True), 
                         batch_size=opt.batchSize, shuffle=True, num_workers=opt.n_cpu)
 
