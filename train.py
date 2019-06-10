@@ -25,7 +25,7 @@ from datasets import ImageDataset
     print(f"max_val: {torch.max(self)}")
     print(f"type: {type(self)}") """
 
-torch.Tensor.describe = _describe
+#torch.Tensor.describe = _describe
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--epoch', type=int, default=0, help='starting epoch')
