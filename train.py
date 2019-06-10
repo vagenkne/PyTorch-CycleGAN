@@ -18,12 +18,12 @@ from utils import Logger
 from utils import weights_init_normal
 from datasets import ImageDataset
 
-def _describe(self):
+""" def _describe(self):
     print(f"shape: {self.shape}")
     print(f"dtyle: {self.dtype}")
     print(f"min_val: {torch.min(self)}")
     print(f"max_val: {torch.max(self)}")
-    print(f"type: {type(self)}")
+    print(f"type: {type(self)}") """
 
 torch.Tensor.describe = _describe
 
